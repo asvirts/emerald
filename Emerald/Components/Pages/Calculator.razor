@@ -1,0 +1,600 @@
+﻿@using Microsoft.AspNetCore.Components;
+@using System.Diagnostics
+
+@page "/calculator"
+
+<h1>Calculator</h1>
+
+<div class="container-fluid">
+    <div class="row bg-accent rounded py-5">
+        @output
+    </div>
+
+    <div class="row">
+        <button class="col-3 p-5" @onclick=@(_=>ClearCalculator(true))>AC</button>
+        <button class="col-3 p-5">+/-</button>
+        <button class="col-3 p-5">%</button>
+        <button class="col-3 p-5">/</button>
+    </div>
+
+    <div class="row">
+        <button class="col-3 p-5" @onclick=@(_=>HandleClickInt(7))>7</button>
+        <button class="col-3 p-5" @onclick=@(_=>HandleClickInt(8))>8</button>
+        <button class="col-3 p-5" @onclick=@(_=>HandleClickInt(9))>9</button>
+        <button class="col-3 p-5">x</button>
+    </div>
+
+    <div class="row">
+        <button class="col-3 p-5">4</button>
+        <button class="col-3 p-5">5</button>
+        <button class="col-3 p-5">6</button>
+        <button class="col-3 p-5">-</button>
+    </div>
+
+    <div class="row">
+        <button class="col-3 p-5">1</button>
+        <button class="col-3 p-5">2</button>
+        <button class="col-3 p-5">3</button>
+        <button class="col-3 p-5">+</button>
+    </div>
+
+    <div class="row">
+        <button class="col-6 p-5">0</button>
+        <button class="col-3 p-5">.</button>
+        <button class="col-3 p-5">=</button>
+    </div>
+</div>
+
+
+@code {
+    private string output { get; set; } = "0";
+    private bool inOperation = false;
+    private static double _userInput1 { get; set; }
+    private static double _userInput2 { get; set; }
+    private static Operation currentOperation;
+    private string? operationOutputText;
+    private static bool _additionalOperations;
+    private double _equationSolution { get; set; }
+
+    private void HandleClickInt(int par)
+    {
+        _userInput1 = par;
+        UpdateOperationOutput();
+    }
+
+    public enum Operation
+    {
+        None,
+        Divide,
+        Multiply,
+        Subtract,
+        Add
+    }
+
+    public Operation CurrentOperation
+    {
+        get => currentOperation; set
+        {
+            currentOperation = value;
+            InOperation = value != Operation.None;
+
+            // if (InOperation)
+            // {
+            //     UpdateOperationOutput();
+            // }
+        }
+    }
+
+    public string OutputText
+    {
+        get
+        {
+            return output.ToString();
+        }
+
+        set
+        {
+            output = value;
+        }
+    }
+
+    public string OperationOutputText
+    {
+        get => operationOutputText; set
+        {
+            operationOutputText = value;
+        }
+    }
+
+    public bool InOperation
+    {
+        get => inOperation;
+
+        set
+        {
+            inOperation = value;
+        }
+
+    }
+
+    public void ClearCalculator(bool clearOutput)
+    {
+        if (clearOutput)
+        {
+            OutputText = "0";
+            _additionalOperations = false;
+        }
+
+        CurrentOperation = Operation.None;
+        _userInput1 = Double.NaN;
+        _userInput2 = Double.NaN;
+    }
+
+    public void CalculateInputs()
+    {
+        var newValue = double.NaN;
+
+        switch (CurrentOperation)
+        {
+            case Operation.Divide:
+                {
+                    if (_additionalOperations)
+                    {
+                        newValue = _equationSolution / _userInput2;
+                    }
+                    else
+                    {
+                        newValue = _userInput1 / _userInput2;
+                    }
+                }
+                break;
+
+            case Operation.Multiply:
+                {
+                    if (_additionalOperations)
+                    {
+                        newValue = _equationSolution * _userInput2;
+                    }
+                    else
+                    {
+                        newValue = _userInput1 * _userInput2;
+                    }
+                }
+                break;
+
+            case Operation.Add:
+                {
+                    if (_additionalOperations)
+                    {
+                        newValue = _equationSolution + _userInput2;
+                    }
+                    else
+                    {
+                        newValue = _userInput1 + _userInput2;
+                    }
+                }
+                break;
+
+            case Operation.Subtract:
+                {
+                    if (_additionalOperations)
+                    {
+                        newValue = _equationSolution - _userInput2;
+                    }
+                    else
+                    {
+                        newValue = _userInput1 - _userInput2;
+                    }
+                }
+                break;
+        }
+
+        var roundedValue = Math.Round(newValue, 4);
+
+        _equationSolution = roundedValue;
+
+        OutputText = roundedValue.ToString();
+
+        if (_additionalOperations == false)
+        {
+            _additionalOperations = true;
+        }
+
+    }
+
+    public void UpdateOperationOutput()
+    {
+        var output = _userInput1.ToString();
+
+        switch (CurrentOperation)
+        {
+            case Operation.Divide:
+                {
+                    if (_additionalOperations)
+                    {
+                        output = $"{OutputText} / ";
+                    }
+                    else
+                    {
+                        output += " / ";
+                    }
+                }
+                break;
+
+            case Operation.Multiply:
+                {
+                    if (_additionalOperations)
+                    {
+                        output = $"{OutputText} x ";
+                    }
+                    else
+                    {
+                        output += " x ";
+                    }
+                }
+                break;
+
+            case Operation.Add:
+                {
+                    if (_additionalOperations)
+                    {
+                        output = $"{OutputText} + ";
+                    }
+                    else
+                    {
+                        output += " + ";
+                    }
+                }
+                break;
+
+            case Operation.Subtract:
+                {
+                    if (_additionalOperations)
+                    {
+                        output = $"{OutputText} - ";
+                    }
+                    else
+                    {
+                        output += " - ";
+                    }
+                }
+                break;
+        }
+
+        OperationOutputText = output;
+    }
+
+
+
+
+
+
+
+
+
+    public void ButtonPressed(string button)
+    {
+        if (double.IsNaN(_userInput1))
+        {
+            _userInput1 = Convert.ToDouble("0");
+        }
+
+        switch (button)
+        {
+            case "PositiveNegativeSwap":
+                {
+                    if (CurrentOperation == Operation.None)
+                    {
+                        if (OutputText == "0")
+                        {
+                            return;
+                        }
+
+                        if (OutputText.Contains("-"))
+                        {
+                            OutputText = OutputText.Remove(0, 1);
+                            _userInput1 = Convert.ToDouble(OutputText);
+                        }
+                        else if (!OutputText.Contains("-"))
+                        {
+                            OutputText = OutputText.Insert(0, "-");
+                            _userInput1 = Convert.ToDouble(OutputText);
+                        }
+                    }
+                    else
+                    {
+                        if (OutputText == "0")
+                        {
+                            return;
+                        }
+
+                        if (OutputText.Contains("-"))
+                        {
+                            OutputText = OutputText.Remove(0, 1);
+                            _userInput2 = Convert.ToDouble(OutputText);
+                        }
+                        else if (!OutputText.Contains("-"))
+                        {
+                            OutputText = OutputText.Insert(0, "-");
+                            _userInput2 = Convert.ToDouble(OutputText);
+                        }
+                    }
+                }
+                break;
+
+            case "Percentage":
+                {
+                    double t = Convert.ToDouble(OutputText) / 100;
+                    OutputText = t.ToString();
+                }
+                break;
+
+            case "Divide":
+                {
+                    CurrentOperation = Operation.Divide;
+                }
+                break;
+
+            case "Multiply":
+                {
+                    CurrentOperation = Operation.Multiply;
+                }
+                break;
+
+            case "Add":
+                {
+                    CurrentOperation = Operation.Add;
+                }
+                break;
+
+            case "Subtract":
+                {
+                    CurrentOperation = Operation.Subtract;
+                }
+                break;
+
+            case "Decimal":
+                {
+                    if (CurrentOperation == Operation.None)
+                    {
+                        if (OutputText.Contains("."))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            OutputText += ".";
+                        }
+                    }
+                    else
+                    {
+                        if (Convert.ToDouble(OutputText) == _userInput1)
+                        {
+                            OutputText = "0.";
+                            _userInput2 = Convert.ToDouble(OutputText);
+                        }
+                    }
+
+                }
+                break;
+
+            case "Equals":
+                {
+                    if (CurrentOperation == Operation.None)
+                    {
+                        return;
+                    }
+                    else if (double.IsNaN(_userInput2))
+                    {
+                        _userInput2 = _userInput1;
+                    }
+
+                    CalculateInputs();
+                    ClearCalculator(false);
+                }
+                break;
+
+            case "Clear":
+                {
+                    ClearCalculator(true);
+                }
+                break;
+
+            case "Back":
+                {
+                    if (CurrentOperation == Operation.None)
+                    {
+                        if (OutputText.Length == 1)
+                        {
+                            OutputText = "0";
+                        }
+                        else
+                        {
+                            var trimmedOutput = OutputText.Substring(0, OutputText.Length - 1);
+                            OutputText = trimmedOutput;
+                        }
+
+                        _userInput1 = Convert.ToDouble(OutputText);
+                    }
+                    else
+                    {
+                        if (OutputText.Length == 1)
+                        {
+                            OutputText = "0";
+                        }
+                        else
+                        {
+                            var trimmedOutput = OutputText.Substring(0, OutputText.Length - 1);
+                            OutputText = trimmedOutput;
+                        }
+
+                        _userInput2 = Convert.ToDouble(OutputText);
+                    }
+                }
+                break;
+
+            // Number pressed
+            default:
+                {
+
+                    if (CurrentOperation == Operation.None)
+                    {
+                        if (OutputText == "0" || Convert.ToDouble(OutputText) == _equationSolution)
+                        {
+                            OutputText = button;
+                        }
+                        else
+                        {
+                            OutputText += button;
+                        }
+
+                        _userInput1 = Convert.ToDouble(OutputText);
+                    }
+                    else
+                    {
+                        if (OutputText == "0" || OutputText == _userInput1.ToString())
+                        {
+                            OutputText = button;
+                        }
+                        else if (_additionalOperations)
+                        {
+                            OutputText = button;
+                        }
+                        else
+                        {
+                            OutputText += button;
+                        }
+
+                        _userInput2 = Convert.ToDouble(OutputText);
+                    }
+
+                }
+                break;
+        }
+    }
+
+    public void HandleKey(KeyboardEventArgs e)
+    {
+        Debug.WriteLine($"Key Pressed: {e}");
+
+        switch (e.Code)
+        {
+            case "Clear":
+                {
+                    ButtonPressed("Clear");
+                }
+                break;
+
+            case "Backspace":
+                {
+                    ButtonPressed("Back");
+                }
+                break;
+
+            case "Enter":
+                {
+                    ButtonPressed("Equals");
+                }
+                break;
+
+            case "C":
+                {
+                    ButtonPressed("Clear");
+                }
+                break;
+
+            // Numbers
+            case "0":
+                {
+                    ButtonPressed("0");
+                }
+                break;
+
+            case "1":
+                {
+                    ButtonPressed("1");
+                }
+                break;
+
+            case "2":
+                {
+                    ButtonPressed("2");
+                }
+                break;
+
+            case "3":
+                {
+                    ButtonPressed("3");
+                }
+                break;
+
+            case "4":
+                {
+                    ButtonPressed("4");
+                }
+                break;
+
+            case "5":
+                {
+                    ButtonPressed("5");
+                }
+                break;
+
+            case "6":
+                {
+                    ButtonPressed("6");
+                }
+                break;
+
+            case "7":
+                {
+                    ButtonPressed("7");
+                }
+                break;
+
+            case "8":
+                {
+                    ButtonPressed("8");
+                }
+                break;
+
+            case "9":
+                {
+                    ButtonPressed("9");
+                }
+                break;
+
+            // Operations
+
+            case "Multiply":
+                {
+                    ButtonPressed("Multiply");
+                }
+                break;
+
+            case "Divide":
+                {
+                    ButtonPressed("Divide");
+                }
+                break;
+
+            case "Add":
+                {
+                    ButtonPressed("Add");
+                }
+                break;
+
+            case "Subtract":
+                {
+                    ButtonPressed("Subtract");
+                }
+                break;
+
+            case "Decimal":
+                {
+                    ButtonPressed("Decimal");
+                }
+                break;
+        }
+    }
+}

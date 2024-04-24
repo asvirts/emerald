@@ -2,6 +2,10 @@
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.bg-accent {
+    background-color: #eee;
+}
+
 a, .btn-link {
     color: #006bb7;
 }
