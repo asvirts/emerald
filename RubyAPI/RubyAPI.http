@@ -1,0 +1,6 @@
+@RubyAPI_HostAddress = http://localhost:5082
+
+GET {{RubyAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
